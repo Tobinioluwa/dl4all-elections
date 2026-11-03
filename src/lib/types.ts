@@ -11,6 +11,7 @@ export type Profile = {
   lga: string | null;
   status: Status;
   is_admin: boolean;
+  rules_accepted_at: string | null;
 };
 
 export type Settings = {

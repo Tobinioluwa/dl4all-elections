@@ -6,6 +6,7 @@ import { AuthCard } from '@/components/AuthCard';
 import { Ballot } from '@/components/Ballot';
 import { Header } from '@/components/Header';
 import { Results } from '@/components/Results';
+import { RulesCard } from '@/components/RulesCard';
 import { useElection } from '@/lib/election';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
@@ -22,7 +23,7 @@ function Panel({ title, children, icon }: { title: string; children: React.React
 
 export default function Home() {
   const election = useElection();
-  const { loading, signedIn, profile, receipt } = useSession();
+  const { loading, signedIn, profile, receipt, nullified } = useSession();
   const [anyAccounts, setAnyAccounts] = useState(true);
 
   useEffect(() => {
@@ -50,6 +51,12 @@ export default function Home() {
         <Link className="btn" href="/admin" style={{ display: 'inline-flex', alignItems: 'center', marginTop: 16, textDecoration: 'none' }}>Open admin</Link>
       </div>
     );
+  } else if (receipt && nullified) {
+    left = (
+      <Panel title="Your vote was nullified">
+        An admin nullified your vote under the election rules{nullified.reason ? `: ${nullified.reason}` : ''}. It is not counted in the results and you cannot vote again. <Link href="/rules">Read the rules</Link>.
+      </Panel>
+    );
   } else if (receipt) {
     left = (
       <div>
@@ -64,6 +71,8 @@ export default function Home() {
     );
   } else if (!settings.voting_open) {
     left = <Panel title="Voting is closed">Voting is not open right now. You can still follow the results on this page.</Panel>;
+  } else if (!profile.rules_accepted_at) {
+    left = <RulesCard />;
   } else {
     left = <Ballot election={election} />;
   }

@@ -9,6 +9,7 @@ type SessionValue = {
   signedIn: boolean;
   profile: Profile | null;
   receipt: string | null;
+  nullified: { reason: string | null } | null;
   reload: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -20,20 +21,24 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [receipt, setReceipt] = useState<string | null>(null);
+  const [nullified, setNullified] = useState<{ reason: string | null } | null>(null);
 
   const load = useCallback(async (id: string | null) => {
     if (!id) {
       setProfile(null);
       setReceipt(null);
+      setNullified(null);
       return;
     }
     const sb = supabase();
     const [p, b] = await Promise.all([
       sb.from('profiles').select('*').eq('id', id).maybeSingle(),
-      sb.from('ballots').select('receipt').eq('voter_id', id).maybeSingle(),
+      sb.from('ballots').select('receipt, nullified_at, nullified_reason').eq('voter_id', id).maybeSingle(),
     ]);
     setProfile((p.data as Profile | null) ?? null);
-    setReceipt((b.data as { receipt: string } | null)?.receipt ?? null);
+    const ballot = b.data as { receipt: string; nullified_at: string | null; nullified_reason: string | null } | null;
+    setReceipt(ballot?.receipt ?? null);
+    setNullified(ballot?.nullified_at ? { reason: ballot.nullified_reason } : null);
   }, []);
 
   useEffect(() => {
@@ -64,12 +69,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       signedIn: !!userId,
       profile,
       receipt,
+      nullified,
       reload: () => load(userId),
       signOut: async () => {
         await supabase().auth.signOut();
       },
     }),
-    [loading, userId, profile, receipt, load],
+    [loading, userId, profile, receipt, nullified, load],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

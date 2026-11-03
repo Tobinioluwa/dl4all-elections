@@ -84,6 +84,7 @@ export function AuthCard({ autoApprove, firstAccount }: { autoApprove: boolean; 
               ? 'Only state presidents and LGA presidents can vote. Your account is approved as soon as you sign up.'
               : 'Only state presidents and LGA presidents can vote. An admin approves your account before you can vote.'}
       </p>
+      <p style={{ margin: '-8px 0 18px', fontSize: 14 }}><a href="/rules">Read the rules of the election</a>. Every part of the form must be filled in, or your vote is nullified.</p>
       <div className="tabs" style={{ marginBottom: 18 }}>
         <button type="button" className="tab" aria-pressed={!up} onClick={() => { setMode('in'); setError(''); }}>Sign in</button>
         <button type="button" className="tab" aria-pressed={up} onClick={() => { setMode('up'); setError(''); }}>Create account</button>

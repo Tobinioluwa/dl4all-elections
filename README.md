@@ -16,8 +16,8 @@ Stack: Next.js 15 (App Router, TypeScript) and Supabase (Postgres, Auth, Storage
 
 ### 1. Supabase
 1. Create a project at supabase.com.
-2. Open **SQL Editor**, paste all of `supabase/migrations/0001_init.sql` and run it once.
-3. **Authentication > Providers > Email:** keep it on. For a real election leave "Confirm email" on so one person cannot create accounts with made-up addresses. For a quick test you can turn it off.
+2. Open **SQL Editor**, paste all of `supabase/migrations/0001_init.sql` and run it once. Then do the same with `0002_rules_and_nullify.sql` (rules page and nullify votes).
+3. **Authentication > Providers > Email:** keep Email on and switch **"Confirm email" OFF**, so people can sign in straight after signing up with no email to open. Admin approval is then the only check that someone is really a president.
 4. **Authentication > URL configuration:** set Site URL to your live address once you have it.
 5. **Project settings > API:** copy the Project URL and the `anon` public key.
 
@@ -37,6 +37,7 @@ Open the site, choose **Create account**. The first account becomes the admin.
 
 ## Before the real election
 - Create the admin account first. Anyone who signs up before you becomes the admin.
+- Read the wording of the rules in `src/components/RulesText.tsx` and edit it to match your constitution.
 - Add positions and contestants, then press **Reset all votes** to clear any test votes.
 - Switch on voting only when the ballot is ready.
 - Supabase's built-in email sender allows only a few emails an hour. For a large election, set your own SMTP (for example Brevo) under Authentication > Emails.
@@ -49,6 +50,7 @@ All rules live in the database (`supabase/migrations/0001_init.sql`), not just t
 - Candidate pictures upload to a public Supabase Storage bucket, admins only.
 
 ## Known limits
-- One vote per account. Use email confirmation, and the admin approval step, to stop duplicates.
+- One vote per account. Emails are not verified, so rely on the admin approval step to stop fake or duplicate accounts.
 - If the same person must not hold two accounts, check the president list by hand when approving.
-- The tally is anonymous, so a recount cannot be run from individual ballots.
+- Votes cast before `0002` was run cannot be nullified one by one (use Reset all votes for those).
+- Choices are stored per voter so a vote can be nullified. The admin screens never list anyone's choices, but whoever has database access can see them.
